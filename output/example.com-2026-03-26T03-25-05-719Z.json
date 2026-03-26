@@ -1,0 +1,84 @@
+{
+  "url": "https://example.com",
+  "elements": {
+    "headings": [
+      "Example Domain"
+    ],
+    "paragraphs": [
+      "This domain is for use in documentation examples without needing permission. Avoid use in operations.",
+      "Learn more"
+    ],
+    "links": [
+      "https://iana.org/domains/example"
+    ],
+    "buttons": [],
+    "images": []
+  },
+  "domTree": {
+    "tag": "BODY",
+    "children": [
+      {
+        "tag": "DIV",
+        "children": [
+          {
+            "tag": "H1",
+            "children": []
+          },
+          {
+            "tag": "P",
+            "children": []
+          },
+          {
+            "tag": "P",
+            "children": [
+              {
+                "tag": "A",
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "analysis": {
+    "language": {
+      "wordCount": 19,
+      "sentenceCount": 3,
+      "avgSentenceLength": 6.333333333333333
+    },
+    "layout": {
+      "totalElements": 11
+    },
+    "navigation": {
+      "menuCount": 0,
+      "maxDepth": 0
+    },
+    "visualHierarchy": {
+      "headingCount": 1,
+      "hierarchyRange": 0
+    },
+    "interaction": {
+      "linkCount": 1,
+      "buttonCount": 0,
+      "interactionLoad": 1
+    },
+    "animation": {
+      "animationCount": 0
+    },
+    "spacing": {
+      "paragraphCount": 2,
+      "avgParagraphLength": 9.5
+    },
+    "consistency": {
+      "uniqueButtonStyles": 0
+    },
+    "forms": {
+      "fieldCount": 0
+    },
+    "errorPrevention": {
+      "requiredFields": 0,
+      "hasErrorMessage": false
+    }
+  }
+}
