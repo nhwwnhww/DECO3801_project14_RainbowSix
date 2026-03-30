@@ -1,5 +1,6 @@
 const { analyzePage } = require("./src/analyzer");
 const { calculateScores } = require("./src/scorer");
+const { runLighthouseWithPlugin } = require("./lighthouse");
 
 const fs = require("fs").promises;
 const path = require("path");
@@ -14,6 +15,13 @@ if (!url) {
 analyzePage(url).then(async (result) => {
   
   result.scores = calculateScores(result.analysis);
+
+  const lhr = await runLighthouseWithPlugin(url);
+
+  result.lighthouse = {
+      categories: lhr.categories,
+      audits: lhr.audits,
+    };
 
   const output = JSON.stringify(result, null, 2);
   console.log(output);
