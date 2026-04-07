@@ -72,37 +72,32 @@ $$Score_{section} = \frac{\sum_{i=1}^{n} (S_i \times W_i)}{\sum_{i=1}^{n} W_i}$$
 | **Higher Better** | $100 \times (\frac{value - bad}{good - bad})$ | `labelCoverage` |
 | **Range Optimal** | $100 \times (1 - \frac{value - ideal}{max - ideal})$ | `visualDensityScore` |
 
-### 4. Regulatory & Standards Mapping
+### 4. Regulatory & Standards Mapping (WCAG 2.2 & ISO 9241-11)
 
-The RainbowSix analyzer cross-references each technical metric with international accessibility (WCAG 2.1) and usability (ISO 9241-11) standards to provide actionable context for the generated insights.
+The RainbowSix analyzer is fully aligned with **WCAG 2.2** (published Oct 2023), with a specific focus on **Cognitive Accessibility** and **User Interaction Efficiency**.
 
-#### 4.1 WCAG 2.1 Success Criteria Mapping
-Metrics are categorized under the core principles of WCAG to help developers ensure their web content is accessible to all users, including those with cognitive disabilities.
+#### 4.1 WCAG 2.2 Success Criteria Mapping
+Each metric is evaluated against the latest success criteria to ensure compliance for users with cognitive, motor, or sensory impairments.
 
-| WCAG Principle | Metric & Success Criteria | Impact on User Experience |
-| :--- | :--- | :--- |
-| **Perceivable** | `contrastIssueCount` (1.4.3/1.4.6)<br>`visualDensityScore` (1.4.8)<br>`videosWithCaptionsRatio` (1.2.2) | Ensures text is readable, layouts are not overwhelming, and multimedia is accessible to users with hearing or visual impairments. |
-| **Operable** | `maxDepth` (2.4.1/2.4.5)<br>`autoplayMediaCount` (2.2.2) | Ensures users can navigate the site easily without being trapped by deep structures or distracted by moving content they cannot control. |
-| **Understandable** | `sentenceAverageLength` (3.1.5)<br>`complexWordRatio` (3.1.3)<br>`labelCoverage` (3.3.2) | Ensures the text is clear and that forms provide sufficient instructions and labels to prevent user error. |
+| Principle | Metric | WCAG 2.2 Criteria | Cognitive Impact |
+| :--- | :--- | :--- | :--- |
+| **Perceivable** | `contrastIssueCount`, `videosWithCaptionsRatio` | 1.4.3 Contrast / 1.2.2 Captions | Ensures content is identifiable regardless of sensory ability. |
+| **Operable** | `visualDensityScore`, `autoplayMediaCount` | 2.5.8 Target Size / 2.2.2 Pause, Stop, Hide | Prevents accidental clicks and reduces distractions/seizure risks. |
+| **Understandable** | `sentenceAverageLength`, `complexWordRatio`, `labelCoverage` | 3.1.5 Reading Level / 3.3.8 Accessible Authentication | Reduces mental fatigue; ensures users don't need "cognitive function tests" to use the site. |
+| **Robust** | `maxDepth` | 2.4.8 Location / 2.4.5 Multiple Ways | Ensures site structure remains predictable across different devices. |
 
-#### 4.2 ISO 9241-11 Usability Model
-We evaluate the "Quality of Use" by mapping insights to the three pillars of the ISO 9241-11 standard:
+#### 4.2 ISO 9241-11 Usability Pillars
+We translate technical artifacts into the three pillars of the ISO 9241-11 quality model:
 
-* **Effectiveness (Can users complete their tasks?)**
-    * **Form Labels (`labelCoverage`)**: Without labels, users often fail to complete data entry.
-    * **Vocabulary (`complexWordRatio`)**: Jargon-heavy text leads to a failure in information retrieval.
-    * **Contrast (`contrastIssueCount`)**: Poor visibility prevents users from correctly identifying interface elements.
-* **Efficiency (How much effort is required?)**
-    * **Reading Level (`sentenceAverageLength`)**: Long sentences increase the cognitive load and time required to process information.
-    * **Navigational Depth (`maxDepth`)**: Deeply nested menus increase the physical and mental effort (number of clicks) to reach content.
-    * **Visual Complexity (`visualDensityScore`)**: Cluttered pages increase "search time" for specific actions or info.
-* **Satisfaction (Is the experience comfortable?)**
-    * **Control over Media (`autoplayMediaCount`)**: Unexpected audio or video significantly lowers user satisfaction and can cause anxiety or physical discomfort (e.g., for users with vestibular disorders).
+* **Effectiveness (Success Rate)**: Can the user achieve their goal?
+    * *Mapped Metrics*: `labelCoverage`, `complexWordRatio`. 
+    * *Focus*: Clear instructions and simplified vocabulary prevent task abandonment.
+* **Efficiency (Resource Expenditure)**: How much mental/physical effort is required?
+    * *Mapped Metrics*: `sentenceAverageLength`, `maxDepth`, `visualDensityScore`. 
+    * *Focus*: Reducing reading time, minimizing navigation clicks, and optimizing visual search speed.
+* **Satisfaction (User Comfort)**: Is the experience free from discomfort?
+    * *Mapped Metrics*: `autoplayMediaCount`. 
+    * *Focus*: Giving users control over their environment to prevent anxiety and sensory overload.
 
----
-
-### 5. Scoring Weights & Priority
-Each metric is assigned a `weight` in `mapping.js` (ranging from 1.0 to 1.5). Higher weights indicate metrics that have a more critical impact on accessibility compliance:
-- **High Priority (1.5)**: `sentenceAverageLength`, `visualDensityScore`, `labelCoverage`, `videosWithCaptionsRatio`.
-- **Medium Priority (1.2)**: `contrastIssueCount`, `autoplayMediaCount`.
-- **Standard Priority (1.0)**: `complexWordRatio`, `maxDepth`.
+### 5. Technical Note on WCAG 2.2 Implementation
+The analyzer specifically addresses the **Cognitive Load** aspect of WCAG 2.2. By evaluating `complexWordRatio` and `sentenceAverageLength`, the tool directly supports **SC 3.3.8 (Accessible Authentication)** by ensuring that the language used in help text and labels does not create an unnecessary "cognitive function test" for the user.
