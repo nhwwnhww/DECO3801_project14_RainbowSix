@@ -79,12 +79,12 @@ The RainbowSix analyzer is fully aligned with **WCAG 2.2** (published Oct 2023),
 #### 4.1 WCAG 2.2 Success Criteria Mapping
 Each metric is evaluated against the latest success criteria to ensure compliance for users with cognitive, motor, or sensory impairments.
 
-| Principle | Metric | WCAG 2.2 Criteria | Cognitive Impact |
+| Principle | Metric | WCAG 2.2 Criteria | Cognitive Impact & Meaning |
 | :--- | :--- | :--- | :--- |
-| **Perceivable** | `contrastIssueCount`, `videosWithCaptionsRatio` | 1.4.3 Contrast / 1.2.2 Captions | Ensures content is identifiable regardless of sensory ability. |
-| **Operable** | `visualDensityScore`, `autoplayMediaCount` | 2.5.8 Target Size / 2.2.2 Pause, Stop, Hide | Prevents accidental clicks and reduces distractions/seizure risks. |
-| **Understandable** | `sentenceAverageLength`, `complexWordRatio`, `labelCoverage` | 3.1.5 Reading Level / 3.3.8 Accessible Authentication | Reduces mental fatigue; ensures users don't need "cognitive function tests" to use the site. |
-| **Robust** | `maxDepth` | 2.4.8 Location / 2.4.5 Multiple Ways | Ensures site structure remains predictable across different devices. |
+| **Perceivable** | `contrastIssueCount`, `videosWithCaptionsRatio` | 1.4.3 Contrast / 1.2.2 Captions | **Ensuring Information Reception**: If contrast is low or captions are missing, users with visual or hearing impairments cannot "receive" the content. Ensures content is identifiable regardless of sensory ability. |
+| **Operable** | `visualDensityScore`, `autoplayMediaCount` | 2.5.8 Target Size / 2.2.2 Pause, Stop, Hide | **Reducing Distraction & Mismatched Interaction**: Crowded layouts (2.5.8) lead to accidental clicks for users with limited motor skills. Autoplay content distracts users with ADHD or cognitive disabilities and can trigger seizures. Help prevents accidental clicks and reduces distractions/seizure risks. |
+| **Understandable** | `sentenceAverageLength`, `complexWordRatio`, `labelCoverage` | 3.1.5 Reading Level / 3.3.8 Accessible Authentication | **Lowering Cognitive Load**: Long sentences and jargon cause mental fatigue. SC 3.3.8 (New in 2.2) requires that users are not forced into "cognitive function tests" (like complex puzzles) to authenticate or submit forms. Help reduces mental fatigue; ensures users don't need "cognitive function tests" to use the site. |
+| **Robust** | `maxDepth` | 2.4.8 Location / 2.4.5 Multiple Ways | **Preventing Navigational Lostness**: Ensures site structures are predictable. If nesting is too deep, users on screen readers or mobile devices may become completely disoriented within the site architecture.|
 
 #### 4.2 ISO 9241-11 Usability Pillars
 We translate technical artifacts into the three pillars of the ISO 9241-11 quality model:
