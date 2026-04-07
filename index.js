@@ -1,6 +1,5 @@
 const { analyzePage } = require("./src/analyzer");
 const { calculateScores } = require("./src/scorer");
-const { generateInsights } = require("./src/insight");
 
 const fs = require("fs").promises;
 
@@ -12,13 +11,17 @@ if (!url) {
 }
 
 analyzePage(url).then(async (result) => {
-  const scores = calculateScores(result.artifacts);
-  const insights = generateInsights(result.artifacts);
+
+  if (!result.artifacts) {
+    console.error("❌ No artifacts returned");
+    process.exit(1);
+  }
+
+  const scoring = calculateScores(result.artifacts);
 
   const finalOutput = {
     url,
-    scores,
-    insights,
+    ...scoring, // Include scores + insights
     artifacts: result.artifacts
   };
 
@@ -32,6 +35,7 @@ analyzePage(url).then(async (result) => {
   await fs.writeFile(filename, output, "utf8");
 
   console.log(`✅ Saved to ${filename}`);
+
 }).catch(err => {
   console.error("❌ Error:", err.message);
 });
