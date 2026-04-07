@@ -1,143 +1,127 @@
+// src/analyzer.js
+
 const puppeteer = require("puppeteer");
 
 async function analyzePage(url) {
-  const browser = await puppeteer.launch({ headless: true });
-  const page = await browser.newPage();
+  let browser;
+  try {
+    // Launch browser with basic sandbox safety
+    browser = await puppeteer.launch({ headless: true });
+    const page = await browser.newPage();
 
-  await page.goto(url, { waitUntil: "networkidle2", timeout: 0 });
+    // Set a reasonable timeout and wait for network to settle
+    await page.goto(url, { waitUntil: "networkidle2", timeout: 60000 });
 
-  const data = await page.evaluate(() => {
+    const artifacts = await page.evaluate(() => {
 
-    // ===== PURPOSE =====
-    function analyzePurpose() {
+      /** 1. Language Complexity Analysis */
+      function analyzeLanguage() {
+        // Clone body to remove script/style tags so they don't pollute word counts
+        const clone = document.body.cloneNode(true);
+        const noise = clone.querySelectorAll('script, style, noscript');
+        noise.forEach(el => el.remove());
+        
+        const text = clone.innerText || "";
+        const words = text.split(/\s+/).filter(Boolean);
+        const sentences = text.split(/[.!?]/).filter(s => s.trim());
+
+        return {
+          sentenceAverageLength: sentences.length ? words.length / sentences.length : 0,
+          complexWordRatio: words.length ? words.filter(w => w.length > 10).length / words.length : 0
+        };
+      }
+
+      /** 2. Visual Density Analysis */
+      function analyzeVisual() {
+        // Filter for visible elements only to get an accurate density score
+        const elements = Array.from(document.querySelectorAll("*")).filter(el => {
+          const style = window.getComputedStyle(el);
+          return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0';
+        });
+
+        return {
+          visualDensityScore: elements.length,
+          contrastIssueCount: 0 // placeholder for future expansion
+        };
+      }
+
+      /** 3. Form Accessibility Analysis */
+      function analyzeForms() {
+        const inputs = document.querySelectorAll("input:not([type='hidden']), textarea, select");
+        const labels = document.querySelectorAll("label");
+
+        return {
+          labelCoverage: inputs.length ? labels.length / inputs.length : 1
+        };
+      }
+
+      /** 4. Media Content Analysis */
+      function analyzeMedia() {
+        const videos = document.querySelectorAll("video");
+
+        if (videos.length === 0) {
+          return {
+            videosWithCaptionsRatio: null,
+            autoplayMediaCount: 0
+          };
+        }
+
+        const videosWithCaptions = [...videos].filter(v =>
+         v.querySelector("track[kind='captions']")
+        );
+
+        return {
+          videosWithCaptionsRatio:
+          videosWithCaptions.length / videos.length,
+          autoplayMediaCount: [...videos].filter(v => v.autoplay).length
+        };
+      }
+
+      /** 5. Navigation Structure Analysis */
+      function analyzeNavigation() {
+        // Calculate max depth of nested lists to determine nav complexity
+        const uls = document.querySelectorAll("ul");
+        
+        function getDepth(node) {
+          let depth = 0;
+          if (node.children) {
+            for (let child of node.children) {
+              depth = Math.max(depth, getDepth(child));
+            }
+          }
+          return 1 + depth;
+        }
+
+        let maxDepth = 0;
+        const topLevels = document.querySelectorAll("nav > ul, body > ul");
+        topLevels.forEach(list => {
+          maxDepth = Math.max(maxDepth, getDepth(list));
+        });
+
+        return {
+          // Fallback to total count if no structured list found
+          maxDepth: maxDepth || uls.length
+        };
+      }
+
       return {
-        titleExists: !!document.title,
-        titleLength: document.title.length,
-        h1Count: document.querySelectorAll("h1").length,
-        headingCount: document.querySelectorAll("h1,h2,h3,h4,h5,h6").length,
-        navCount: document.querySelectorAll("nav").length
-      };
-    }
-
-    // ===== FINDABLE =====
-    function analyzeFindable() {
-      return {
-        hasSkipLink: [...document.querySelectorAll("a")]
-          .some(a => a.innerText.toLowerCase().includes("skip")),
-        hasSearch: !!document.querySelector("input[type='search']"),
-        headingCount: document.querySelectorAll("h1,h2,h3,h4,h5,h6").length,
-        navCount: document.querySelectorAll("nav").length,
-        internalLinkCount: [...document.querySelectorAll("a")]
-          .filter(a => a.href.includes(location.hostname)).length,
-        focusVisibleDetected: [...document.querySelectorAll("*")]
-          .some(el => window.getComputedStyle(el).outlineStyle !== "none")
-      };
-    }
-
-    // ===== MEDIA =====
-    function analyzeMedia() {
-      const videos = document.querySelectorAll("video");
-
-      return {
-        videoCount: videos.length,
-        audioCount: document.querySelectorAll("audio").length,
-        captionTrackCount: document.querySelectorAll("track[kind='captions']").length,
-        videosWithCaptionsRatio: videos.length
-          ? document.querySelectorAll("track[kind='captions']").length / videos.length
-          : 0,
-        transcriptLinkCount: [...document.querySelectorAll("a")]
-          .filter(a => a.innerText.toLowerCase().includes("transcript")).length,
-        autoplayMediaCount: document.querySelectorAll("video[autoplay]").length
-      };
-    }
-
-    // ===== LANGUAGE =====
-    function analyzeLanguage() {
-      const text = document.body.innerText || "";
-      const words = text.split(/\s+/).filter(Boolean);
-      const sentences = text.split(/[.!?]/).filter(s => s.trim());
-
-      const complexWords = words.filter(w => w.length > 10);
-
-      return {
-        readabilityScore: 100 - (complexWords.length / words.length) * 100,
-        sentenceAverageLength: sentences.length
-          ? words.length / sentences.length
-          : 0,
-        paragraphAverageLength: document.querySelectorAll("p").length
-          ? words.length / document.querySelectorAll("p").length
-          : 0,
-        complexWordRatio: complexWords.length / words.length,
-        jargonCount: complexWords.length,
-        acronymCount: words.filter(w => w === w.toUpperCase()).length,
-        langAttributeExists: !!document.documentElement.lang
-      };
-    }
-
-    // ===== VISUAL =====
-    function analyzeVisual() {
-      const elements = document.querySelectorAll("*");
-
-      return {
-        lineLengthEstimate: document.body.innerText.length / window.innerWidth,
-        textSpacingSupport: true,
-        reflowSupport: true,
-        contrastIssueCount: 0,
-        visualDensityScore: elements.length,
-        whitespaceScore: document.body.innerText.length / elements.length,
-        fontResizeSupport: true
-      };
-    }
-
-    // ===== FORMS =====
-    function analyzeForms() {
-      const inputs = document.querySelectorAll("input, textarea, select");
-
-      return {
-        formFieldCount: inputs.length,
-        requiredFieldCount: document.querySelectorAll("[required]").length,
-        labelCoverage: document.querySelectorAll("label").length / (inputs.length || 1),
-        hasErrorMessage: document.body.innerText.toLowerCase().includes("error"),
-        hasErrorSuggestion: document.body.innerText.toLowerCase().includes("suggest"),
-        hasReviewStep: document.body.innerText.toLowerCase().includes("review"),
-        hasConfirmationStep: document.body.innerText.toLowerCase().includes("confirm"),
-        hasUndoOption: document.body.innerText.toLowerCase().includes("undo")
-      };
-    }
-
-    // ===== DISTRACTION =====
-    function analyzeDistraction() {
-      return {
-        animationCount: [...document.querySelectorAll("*")]
-          .filter(el => window.getComputedStyle(el).animationName !== "none").length,
-        flashingElementCount: 0,
-        autoplayMediaCount: document.querySelectorAll("video[autoplay]").length,
-        autoUpdatingContentCount: 0,
-        hasPauseControl: document.body.innerText.toLowerCase().includes("pause"),
-        timedInteractionCount: 0,
-        hasExtendTimeOption: document.body.innerText.toLowerCase().includes("extend")
-      };
-    }
-
-    return {
-      artifacts: {
-        purpose: analyzePurpose(),
-        findable: analyzeFindable(),
-        media: analyzeMedia(),
         language: analyzeLanguage(),
         visual: analyzeVisual(),
         forms: analyzeForms(),
-        distraction: analyzeDistraction()
-      }
-    };
-  });
+        media: analyzeMedia(),
+        navigation: analyzeNavigation()
+      };
+    });
 
-  await browser.close();
+    return { url, artifacts };
 
-  return {
-    url,
-    ...data
-  };
+  } catch (error) {
+    console.error(`Analysis failed: ${error.message}`);
+    return { url, error: error.message };
+  } finally {
+    // Ensure browser always closes to prevent memory leaks
+    if (browser) await browser.close();
+  }
 }
 
 module.exports = { analyzePage };
